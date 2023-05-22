@@ -36,6 +36,7 @@ fetch(url).then(response => response.json()).then(data => {
             fillOpacity: 0.8
         }).bindPopup(`<strong>Magnitude:</strong> ${magnitude}<br><strong>Location:</strong> ${earthquake.place}<br><strong>Depth:</strong> ${depth} km`).addTo(map);
     });
+
 });
 
 // Function to get the marker color based on depth

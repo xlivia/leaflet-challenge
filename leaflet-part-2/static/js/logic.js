@@ -29,6 +29,7 @@ tileLayer.addTo(map);
 
 // Fetch the earthquake data
 const earthquakeUrl = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson';
+
 fetch(earthquakeUrl).then(response => response.json()).then(earthquakeData => {
 
     // Create an earthquakes overlay group
@@ -62,9 +63,6 @@ fetch(earthquakeUrl).then(response => response.json()).then(earthquakeData => {
         earthquakes.addLayer(marker);
     });
 
-    // Add the earthquakes overlay to the map
-    earthquakes.addTo(map);
-
     // Create an object to hold the tectonic plates layer
     const tectonicPlates = {
         'Tectonic Plates': L.geoJson(),
@@ -72,9 +70,10 @@ fetch(earthquakeUrl).then(response => response.json()).then(earthquakeData => {
 
     // Fetch the tectonic plates data
     const tectonicPlatesUrl = 'https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json';
+
     fetch(tectonicPlatesUrl).then(response => response.json()).then(tectonicPlatesData => {
 
-        // Create a GeoJSON layer for the tectonic plates
+        // Create a tectonic plates layer
         const tectonicPlatesLayer = L.geoJson(tectonicPlatesData, {
             style: {
                 color: '#FF0000',
@@ -85,15 +84,20 @@ fetch(earthquakeUrl).then(response => response.json()).then(earthquakeData => {
         // Add the tectonic plates layer to the tectonic plates overlay
         tectonicPlates['Tectonic Plates'] = tectonicPlatesLayer;
 
-        // Add the tectonic plates overlay to the map
-        tectonicPlatesLayer.addTo(map);
+        // Create the layer control
+        const layerControl = L.control.layers(baseLayers, { 'Earthquakes': earthquakes, ...tectonicPlates }).addTo(map);
+
+        // Add the earthquakes layer to the map
+        earthquakes.addTo(map);
+
+        // Fit the map bounds to the earthquakes layer
+        map.fitBounds(earthquakes.getBounds());
+
+        // Function to get the marker color based on depth
+        function getColor(depth) {
+            return depth > 100 ? '#FF0000' : depth > 50  ? '#FFA500' : depth > 10  ? '#FFFF00' : '#00FF00';
+        }
+
     });
 
-    // Create the layer control
-    L.control.layers(baseLayers, { 'Earthquakes': earthquakes, ...tectonicPlates }).addTo(map);
 });
-
-// Function to get the marker color based on depth
-function getColor(depth) {
-    return depth > 100 ? '#FF0000' : depth > 50  ? '#FFA500' : depth > 10  ? '#FFFF00' : '#00FF00';
-}
