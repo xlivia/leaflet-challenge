@@ -31,6 +31,29 @@ const baseLayers = {
 // Add the base layers to the map
 tileLayer.addTo(map);
 
+// Function to get the marker color based on depth
+function getColor(depth) {
+    //return depth > 100 ? '#FF0000' : depth > 50 ? '#FFA500' : depth > 10 ? '#FFFF00' : '#00FF00';
+    if (depth >= -10 && depth <= 10) {
+        return '#00FF00'; // green-lime color square
+    }
+    else if (depth > 10 && depth <= 30) {
+        return '#ADFF2F'; // yellow-green color square
+    }
+    else if (depth > 30 && depth <= 50) {
+        return '#FFFF00'; // yellow-orange color square
+    }
+    else if (depth > 50 && depth <= 70) {
+        return '#FFA500'; // orange color square
+    }
+    else if (depth > 70 && depth <= 90) {
+        return '#FF4500'; // red-orange color square
+    }
+    else {
+        return '#FF0000'; // red color square
+    }
+}
+
 // Fetch the earthquake data
 const earthquakeUrl = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson';
 fetch(earthquakeUrl).then(response => response.json()).then(earthquakeData => {
@@ -92,13 +115,35 @@ fetch(earthquakeUrl).then(response => response.json()).then(earthquakeData => {
 
         // Create the layer control
         L.control.layers(baseLayers, overlayLayers).addTo(map);
+
+        // Create the legend control
+        const legend = L.control({ position: 'bottomright' });
+
+        // Function to generate the HTML for the legend
+        legend.onAdd = function (map) {
+            const div = L.DomUtil.create('div', 'legend');
+            const colors = [
+                { color: '#00FF00', range: '-10 - 10' },
+                { color: '#ADFF2F', range: '10 - 30' },
+                { color: '#FFFF00', range: '30 - 50' },
+                { color: '#FFA500', range: '50 - 70' },
+                { color: '#FF4500', range: '70 - 90' },
+                { color: '#FF0000', range: '90+' }
+            ];
+            let labels = '';
+            for (let i = 0; i < colors.length; i++) {
+                labels += '<div class="legend-item">' + '<div class="legend-color" style="background:' + colors[i].color + '"></div>' + '<div class="legend-range">' + colors[i].range + '</div>' + '</div>';
+            }
+            div.innerHTML = labels;
+            return div;
+        };
+
+        // Add the legend to the map
+        legend.addTo(map);
+
     }).catch(error => console.log('Error fetching tectonic plates data:', error));
 
     // Add the earthquakes overlay to the map
     earthquakes.addTo(map);
-}).catch(error => console.log('Error fetching earthquake data:', error));
 
-// Function to get the marker color based on depth
-function getColor(depth) {
-    return depth > 100 ? '#FF0000' : depth > 50 ? '#FFA500' : depth > 10 ? '#FFFF00' : '#00FF00';
-}
+}).catch(error => console.log('Error fetching earthquake data:', error));
