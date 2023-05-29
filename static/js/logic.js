@@ -33,7 +33,6 @@ tileLayer.addTo(map);
 
 // Function to get the marker color based on depth
 function getColor(depth) {
-    //return depth > 100 ? '#FF0000' : depth > 50 ? '#FFA500' : depth > 10 ? '#FFFF00' : '#00FF00';
     if (depth >= -10 && depth <= 10) {
         return '#00FF00'; // green-lime color square
     }
@@ -80,9 +79,9 @@ fetch(earthquakeUrl).then(response => response.json()).then(earthquakeData => {
             radius: markerSize,
             fillColor: markerColor,
             color: '#000',
-            weight: 1,
+            weight: 0.5,
             opacity: 1,
-            fillOpacity: 0.8
+            fillOpacity: 0.7
         }).bindPopup(`<strong>Magnitude:</strong> ${magnitude}<br><strong>Location:</strong> ${earthquake.place}<br><strong>Depth:</strong> ${depth} km`);
 
         // Add the marker to the earthquakes layer group
@@ -145,5 +144,4 @@ fetch(earthquakeUrl).then(response => response.json()).then(earthquakeData => {
 
     // Add the earthquakes overlay to the map
     earthquakes.addTo(map);
-
 }).catch(error => console.log('Error fetching earthquake data:', error));
