@@ -34,67 +34,69 @@ tileLayer.addTo(map);
 // Fetch the earthquake data
 const earthquakeUrl = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson';
 fetch(earthquakeUrl).then(response => response.json()).then(earthquakeData => {
-        // Create an earthquakes overlay group
-        const earthquakes = L.layerGroup();
 
-        // Loop through the earthquake data
-        earthquakeData.features.forEach(feature => {
-            const earthquake = feature.properties;
+    // Create an earthquakes overlay group
+    const earthquakes = L.layerGroup();
 
-            // Get the latitude, longitude, magnitude, and depth of the earthquake
-            const lat = feature.geometry.coordinates[1];
-            const lng = feature.geometry.coordinates[0];
-            const magnitude = earthquake.mag;
-            const depth = feature.geometry.coordinates[2];
+    // Loop through the earthquake data
+    earthquakeData.features.forEach(feature => {
+        const earthquake = feature.properties;
 
-            // Define the marker size and color based on magnitude and depth
-            const markerSize = magnitude * 5;
-            const markerColor = getColor(depth);
+        // Get the latitude, longitude, magnitude, and depth of the earthquake
+        const lat = feature.geometry.coordinates[1];
+        const lng = feature.geometry.coordinates[0];
+        const magnitude = earthquake.mag;
+        const depth = feature.geometry.coordinates[2];
 
-            // Create a marker with popup
-            const marker = L.circleMarker([lat, lng], {
-                radius: markerSize,
-                fillColor: markerColor,
-                color: '#000',
-                weight: 1,
-                opacity: 1,
-                fillOpacity: 0.8
-            }).bindPopup(`<strong>Magnitude:</strong> ${magnitude}<br><strong>Location:</strong> ${earthquake.place}<br><strong>Depth:</strong> ${depth} km`);
+        // Define the marker size and color based on magnitude and depth
+        const markerSize = magnitude * 5;
+        const markerColor = getColor(depth);
 
-            // Add the marker to the earthquakes layer group
-            earthquakes.addLayer(marker);
+        // Create a marker with popup
+        const marker = L.circleMarker([lat, lng], {
+            radius: markerSize,
+            fillColor: markerColor,
+            color: '#000',
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).bindPopup(`<strong>Magnitude:</strong> ${magnitude}<br><strong>Location:</strong> ${earthquake.place}<br><strong>Depth:</strong> ${depth} km`);
+
+        // Add the marker to the earthquakes layer group
+        earthquakes.addLayer(marker);
+    });
+
+    // Fetch the tectonic plates data
+    const tectonicPlatesUrl = 'https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json';
+    fetch(tectonicPlatesUrl).then(response => response.json()).then(tectonicPlatesData => {
+
+        // Create a tectonic plates overlay group
+        const tectonicPlates = L.layerGroup();
+
+        // Create a GeoJSON layer for the tectonic plates
+        const tectonicPlatesLayer = L.geoJSON(tectonicPlatesData, {
+            style: {
+                color: '#FF0000',
+                weight: 2,
+            }
         });
 
-        // Fetch the tectonic plates data
-        const tectonicPlatesUrl = 'https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json';
-        fetch(tectonicPlatesUrl).then(response => response.json()).then(tectonicPlatesData => {
-                // Create a tectonic plates overlay group
-                const tectonicPlates = L.layerGroup();
+        // Add the tectonic plates layer to the tectonic plates overlay group
+        tectonicPlates.addLayer(tectonicPlatesLayer);
 
-                // Create a GeoJSON layer for the tectonic plates
-                const tectonicPlatesLayer = L.geoJSON(tectonicPlatesData, {
-                    style: {
-                        color: '#FF0000',
-                        weight: 2,
-                    }
-                });
+        // Create an overlay layer group
+        const overlayLayers = {
+            'Earthquakes': earthquakes,
+            'Tectonic Plates': tectonicPlates,
+        };
 
-                // Add the tectonic plates layer to the tectonic plates overlay group
-                tectonicPlates.addLayer(tectonicPlatesLayer);
+        // Create the layer control
+        L.control.layers(baseLayers, overlayLayers).addTo(map);
+    }).catch(error => console.log('Error fetching tectonic plates data:', error));
 
-                // Create an overlay layer group
-                const overlayLayers = {
-                    'Earthquakes': earthquakes,
-                    'Tectonic Plates': tectonicPlates,
-                };
-
-                // Create the layer control
-                L.control.layers(baseLayers, overlayLayers).addTo(map);
-            }).catch(error => console.log('Error fetching tectonic plates data:', error));
-
-        // Add the earthquakes overlay to the map
-        earthquakes.addTo(map);
-    }).catch(error => console.log('Error fetching earthquake data:', error));
+    // Add the earthquakes overlay to the map
+    earthquakes.addTo(map);
+}).catch(error => console.log('Error fetching earthquake data:', error));
 
 // Function to get the marker color based on depth
 function getColor(depth) {
