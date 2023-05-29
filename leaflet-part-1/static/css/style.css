@@ -6,3 +6,16 @@ body {
 #map, body, html {
     height: 100%;
 }
+
+.info.legend {
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+    margin-right: 5px;
+}
