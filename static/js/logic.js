@@ -12,7 +12,6 @@ const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/
     maxZoom: 18,
 });
 
-// Create the grayscale tile layer using Stamen's toner tile layer
 const grayscaleLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.{ext}', {
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
     subdomains: 'abcd',
@@ -55,6 +54,7 @@ function getColor(depth) {
 
 // Fetch the earthquake data
 const earthquakeUrl = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson';
+
 fetch(earthquakeUrl).then(response => response.json()).then(earthquakeData => {
 
     // Create an earthquakes overlay group
@@ -82,7 +82,37 @@ fetch(earthquakeUrl).then(response => response.json()).then(earthquakeData => {
             weight: 0.5,
             opacity: 1,
             fillOpacity: 0.7
-        }).bindPopup(`<strong>Magnitude:</strong> ${magnitude}<br><strong>Location:</strong> ${earthquake.place}<br><strong>Depth:</strong> ${depth} km`);
+        });
+
+        // Create a custom popup content
+        const popupContent = `<strong>Magnitude:</strong> ${magnitude}<br><strong>Location:</strong> ${earthquake.place}<br><strong>Depth:</strong> ${depth} km`;
+
+        // Bind the popup content to the marker
+        marker.bindPopup(popupContent);
+
+        // Add event listeners for hover
+        marker.on('mouseover', function (e) {
+            this.openPopup();
+        });
+
+        marker.on('mouseout', function (e) {
+            if (!this._popup._container.contains(e.toElement) && !this._popup._container.contains(e.relatedTarget)) {
+                this.closePopup();
+            }
+            this.on('mouseout'); // Enable the mouseout event again when the popup is closed
+        });
+
+        // Add event listener for click
+        marker.on('click', function (e) {
+            this.openPopup();
+            this.off('mouseout'); // Disable the mouseout event to keep the popup open
+            this.options.clicked = false; // Reset the clicked state
+        });
+
+        // Add event listener for popup close
+        marker.on('popupclose', function (e) {
+            this.on('mouseout'); // Enable the mouseout event again when the popup is closed
+        });
 
         // Add the marker to the earthquakes layer group
         earthquakes.addLayer(marker);
